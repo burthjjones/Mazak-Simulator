@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MAZATROL Smart">
+<meta name="format-detection" content="telephone=no">
+<meta name="mobile-web-app-capable" content="yes">
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="theme-color" content="#061013">
+
+<title>MAZATROL Smart – Vollständiger Lernsimulator</title>
+<style>
+:root{
+  --screen:#061013; --cyan:#55dce8; --green:#7ef08a; --yellow:#ffdc5c;
+  --white:#edf5f5; --line:#315057; --soft:#95adb1; --panel:#11191c;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#222;color:var(--white);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+body{padding:max(7px,env(safe-area-inset-top)) max(7px,env(safe-area-inset-right)) max(9px,env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-left))}
+.app{max-width:1500px;margin:auto}
+.toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:7px}
+.toolbar .left,.toolbar .right{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+button,select,input{font:15px system-ui,sans-serif}
+button{min-height:42px;border-radius:7px;border:1px solid #5b5b5b;background:#343434;color:white;padding:7px 11px;touch-action:manipulation}
+button.primary{background:#12606a} button.warn{background:#744923} button.danger{background:#6f2f2f}
+button:active{transform:translateY(1px)}
+.title{font:700 17px system-ui,sans-serif}
+.machine{background:#090909;border:5px solid #454545;border-radius:11px;padding:8px;box-shadow:0 12px 30px #0009}
+.screen{background:var(--screen);border:2px solid #1f353a;border-radius:3px;overflow:auto;min-height:710px}
+.head{min-width:1160px;display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:center;padding:8px 12px;border-bottom:1px solid #29474d}
+.brand{font-size:24px}.smart{padding:2px 28px;border:1px solid #4c8053;background:#15361c;color:#72ed7c}.clock{font-size:14px}
+.programmeta{min-width:1160px;display:grid;grid-template-columns:100px 130px 1fr;gap:8px;padding:7px 11px;border-bottom:1px solid #29474d}
+.programmeta label{color:var(--cyan);font-size:12px}.programmeta input{width:100%;height:33px;background:#0b171a;color:#fff;border:1px solid #35575f;border-radius:3px;padding:3px 6px;font-family:inherit}
+.program{min-width:1160px;padding:8px 11px 14px}
+.unit{border-bottom:1px solid #29464c;padding:7px 0 10px;position:relative}
+.unithead{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.enr{color:var(--cyan);font-size:18px;min-width:64px}.utype{color:var(--yellow);font-size:19px;font-weight:700}
+.unitactions{margin-left:auto;display:flex;gap:5px}.unitactions button{min-height:31px;padding:3px 8px;font-size:12px}
+.grid{display:grid;gap:5px 9px;align-items:end}.common{grid-template-columns:95px repeat(6,120px)}.op{grid-template-columns:95px repeat(7,120px)}
+.tool{grid-template-columns:48px 70px 75px 84px 88px 88px 88px 88px 88px 72px 72px 48px}
+.shape{grid-template-columns:58px 80px 96px 96px 96px 96px 96px 96px 92px 40px}
+.drill{grid-template-columns:95px 120px 120px 120px 120px 120px 120px 120px}
+.field label{display:block;color:var(--cyan);font-size:13px;line-height:1.05;margin-bottom:2px;white-space:nowrap}
+.field input,.field select{width:100%;height:33px;border:0;border-bottom:1px solid #37575e;background:transparent;color:#fff;padding:2px 3px;font:17px ui-monospace,SFMono-Regular,Menlo,monospace;border-radius:0}
+.field select{font-size:14px}.field input:focus,.field select:focus{outline:2px solid #5bcbd8;background:#0d2024}
+.rowlabel{font-size:17px;color:var(--yellow);padding-bottom:5px}.r{color:#ffd071}.f{color:#7bf08a}
+.addrow{margin-top:6px}
+.softkeys{min-width:1160px;display:grid;grid-template-columns:repeat(9,1fr);background:#dbdcd9;color:#354448;border-top:1px solid #476067}
+.softkeys div{min-height:56px;display:flex;align-items:center;justify-content:center;text-align:center;border-right:1px solid #b7b8b6;padding:3px;font:12px system-ui,sans-serif}
+.lower{display:grid;grid-template-columns:1fr 390px;gap:9px;margin-top:9px}
+.box{background:#151515;border:1px solid #444;border-radius:8px;padding:9px}.box h3{margin:0 0 7px;font:700 15px system-ui,sans-serif}
+svg{width:100%;height:350px;background:#061013;border-radius:5px}
+.help{font:13px/1.45 system-ui,sans-serif}.ok{color:#86f296}.warntext{color:#ffd472}.bad{color:#ff9090}
+.modal{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:12px;z-index:20}
+.modal.show{display:flex}.dialog{width:min(560px,96vw);background:#171717;border:1px solid #666;border-radius:10px;padding:14px;box-shadow:0 12px 40px #000}
+.dialog h2{margin:0 0 10px;font:700 18px system-ui,sans-serif}.dialog .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.dialog label{font:13px system-ui,sans-serif;color:#bbb}.dialog input,.dialog select{width:100%;height:42px;border-radius:6px;border:1px solid #555;background:#222;color:#fff;padding:5px 8px}
+.dialog .buttons{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+.smallnote{font:12px/1.35 system-ui,sans-serif;color:#bbb;margin:7px 1px 0}
+@media(max-width:950px){.lower{grid-template-columns:1fr}.title{font-size:15px}.machine{border-width:3px;padding:4px}.screen{min-height:580px}.box svg{height:290px}}
+
+/* iPad / Safari Optimierung */
+html,body{overscroll-behavior:none;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font-size:16px !important}
+button{min-height:48px}
+.field input,.field select{min-height:42px;touch-action:manipulation}
+.screen{-webkit-overflow-scrolling:touch}
+.toolbar{position:sticky;top:0;z-index:12;background:#222;padding-top:max(3px,env(safe-area-inset-top));padding-bottom:6px}
+body.ipad .machine{border-width:3px}
+body.ipad .screen{min-height:calc(100vh - 140px)}
+body.ipad .unitactions button{min-width:48px}
+.ipadnotice{display:none;margin:0 0 8px;padding:9px 11px;border:1px solid #4e6870;background:#102126;border-radius:8px;font:13px/1.35 system-ui,sans-serif}
+body.ipad .ipadnotice{display:block}
+.backupbox{width:100%;min-height:160px;resize:vertical;background:#0c1518;color:#e9f3f4;border:1px solid #50656a;border-radius:7px;padding:8px;font:13px ui-monospace,SFMono-Regular,Menlo,monospace}
+@media(max-width:1180px){.lower{grid-template-columns:1fr}.toolbar .left,.toolbar .right{width:100%}.toolbar .right{justify-content:flex-start}}
+@media(orientation:portrait) and (max-width:1024px){.title{font-size:14px}.screen{min-height:70vh}}
+
+</style>
+</head>
+<body>
+<div class="app">
+
+<div id="installBanner" style="display:none;margin:0 0 8px;padding:10px 12px;border:1px solid #49666c;background:#102126;border-radius:8px;font:13px/1.4 system-ui,sans-serif">
+  <b>Als App installieren:</b> In Safari auf <b>Teilen</b> → <b>Zum Home-Bildschirm</b>. Danach startet der Simulator wie eine eigene App und funktioniert nach dem ersten Laden auch offline.
+</div>
+
+  <div class="toolbar">
+    <div class="left">
+      <div class="title">MAZATROL Smart – kompletter Lern-Programmeditor</div>
+      <button id="newProg" class="primary">Neues Programm</button>
+      <button id="addUnit" class="primary">+ Einheit</button>
+      <button id="chamferExample" class="warn">Beispiel Ø30 + 2×45° Fase</button>
+    </div>
+    <div class="right">
+      <select id="savedPrograms"></select>
+      <button id="saveProg">Speichern</button>
+      <button id="loadProg">Laden</button>
+      <button id="duplicate">Kopie</button>
+      <button id="deleteProg" class="danger">Löschen</button>
+      <button id="exportProg">Export JSON</button>
+      <button id="importProg">Import JSON</button>
+      <button id="backupProg" class="warn">Backup</button>
+      <input id="importFile" type="file" accept=".json,application/json" hidden>
+    </div>
+  </div>
+
+  <div class="ipadnotice" id="ipadNotice"><b>iPad-Modus:</b> Safari im Querformat verwenden. Speichern erfolgt lokal im Browser. Für eine zusätzliche Sicherung „Backup“ verwenden.</div>
+<div class="machine">
+    <div class="screen">
+      <div class="head">
+        <div class="brand">MAZATROL - <span id="headerProgNo">1000</span></div>
+        <div class="smart">SMART</div>
+        <div id="clock" class="clock"></div>
+      </div>
+      <div class="programmeta">
+        <div class="field"><label>PROGRAMM Nr.</label><input id="programNo" value="1000"></div>
+        <div class="field"><label>TEIL Nr.</label><input id="partNo" value="TEIL-001"></div>
+        <div class="field"><label>BESCHREIBUNG</label><input id="description" value="Neues Drehteil"></div>
+      </div>
+      <div id="program" class="program"></div>
+      <div class="softkeys">
+        <div>TEIL Nr.</div><div>SUCHEN</div><div>PROGRAMM<br>ÄNDERN</div><div>EINSTELL<br>DATEN</div>
+        <div>WERKZEUG<br>WEG</div><div></div><div>BESCHREI</div><div>HILFE</div><div>PROGRAMM<br>INDEX</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lower">
+    <div class="box">
+      <h3>Grafische Lernsimulation</h3>
+      <svg id="svg" viewBox="0 0 980 350"></svg>
+      <div class="smallnote">Orange = Rohkontur • Cyan = Fertigkontur • Beispiel-Fase Ø30/2×45°: X26/Z0 → X30/Z-2 • Z0 rechts</div>
+    </div>
+    <div class="box help">
+      <h3>Programmprüfung</h3>
+      <div id="status"></div>
+      <p><b>Darstellung:</b> Z0 ist rechts, negative Z-Werte laufen nach links. Rohkontur = orange, Fertigkontur = cyan.</p><p><b>Fase wichtig:</b> Bei Ø30 und 2×45° an der Stirnkante ist der Punkt an Z0 <b>X26</b>, nicht X34. Bei Durchmesserprogrammierung entsprechen 2 mm radialer Fase 4 mm Durchmesseränderung.</p><p><b>Workflow:</b> Neues Programm → ENr.0 Rohteil → „+ Einheit“ → Bearbeitung auswählen → Werkzeug-/Schnittdaten → Kontur → Grafik prüfen → speichern.</p>
+      <p class="warntext"><b>Lernsimulator:</b> keine echte Mazak-Interpreterlogik, keine Kollisionsprüfung, kein Spannfutter-/Werkzeughaltermodell und keine Freigabe für reale Bearbeitung.</p>
+    </div>
+  </div>
+</div>
+
+
+<div id="backupModal" class="modal">
+  <div class="dialog">
+    <h2>iPad Backup</h2>
+    <p style="font:13px/1.4 system-ui,sans-serif;color:#ccc">Der Text unten enthält dein komplettes Programm. Du kannst ihn kopieren und z. B. in Notizen sichern. Zum Wiederherstellen Text einfügen und „Übernehmen“ drücken.</p>
+    <textarea id="backupText" class="backupbox" spellcheck="false"></textarea>
+    <div class="buttons"><button id="copyBackup">Kopieren</button><button id="shareBackup">Teilen</button><button id="applyBackup" class="primary">Übernehmen</button><button id="closeBackup">Schließen</button></div>
+  </div>
+</div>
+
+<div id="unitModal" class="modal">
+  <div class="dialog">
+    <h2>Neue Bearbeitungseinheit</h2>
+    <label>Einheitstyp</label>
+    <select id="unitType">
+      <option value="FACE">SCHNITT / PLANEN</option>
+      <option value="OD">WELLE AUS</option>
+      <option value="ID">WELLE INN</option>
+      <option value="GROOVE_OD">EINSTICH AUS</option>
+      <option value="GROOVE_ID">EINSTICH INN</option>
+      <option value="DRILL">BOHREN</option>
+      <option value="THREAD_OD">GEWINDE AUS</option>
+      <option value="THREAD_ID">GEWINDE INN</option>
+      <option value="PART">ABSTECHEN</option>
+      <option value="GENERIC">SONSTIGE / FREIE EINHEIT</option>
+    </select>
+    <div class="buttons"><button id="cancelUnit">Abbrechen</button><button id="createUnit" class="primary">Einfügen</button></div>
+  </div>
+</div>
+
+<div id="newModal" class="modal">
+  <div class="dialog">
+    <h2>Komplett neues Programm</h2>
+    <div class="row">
+      <div><label>Programm Nr.</label><input id="newNo" value="1000"></div>
+      <div><label>Teil Nr.</label><input id="newPart" value="TEIL-001"></div>
+    </div>
+    <label>Beschreibung</label><input id="newDesc" value="Neues Drehteil">
+    <div class="row">
+      <div><label>Roh-Ø MAX-AD</label><input id="newD" type="number" value="50"></div>
+      <div><label>Rohlänge</label><input id="newL" type="number" value="60"></div>
+    </div>
+    <div class="buttons"><button id="cancelNew">Abbrechen</button><button id="createNew" class="primary">Neu anlegen</button></div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const uid=()=>Math.random().toString(36).slice(2,9);
+const num=v=>Number(v||0);
+let model;
+
+function fresh(no="1000", part="TEIL-001", desc="Neues Drehteil", D=50, L=60){
+ return {
+  version:2,
+  programNo:no, partNo:part, description:desc,
+  common:{mat:"ST IRN",maxad:+D,minid:0,length:+L,planauf:2,drbe:2000},
+  units:[]
+ };
+}
+function toolDefault(){return {snr:"1",wnr:"10",typ:"—",tie1:"2",tie2:"",tie3:"",schlicx:"",schlicz:"",vc:"200",feed:"0.15",m:"8"}}
+function finishTool(){return {snr:"2",wnr:"10",typ:"—",tie1:"",tie2:"",tie3:"",schlicx:"",schlicz:"",vc:"200",feed:"0.10",m:"8"}}
+function makeUnit(type){
+ const base={id:uid(),type, rough:toolDefault(), finish:finishTool(), shapes:[]};
+ if(type==="FACE") Object.assign(base,{name:"SCHNITT",finz:.2,sx:model.common.maxad,sz:model.common.planauf,ex:0,ez:0});
+ if(type==="OD") Object.assign(base,{name:"WELLE AUS",absch:"AUS",cptx:model.common.maxad,cptz:0,finx:.3,finz:.1,shapes:[{ptn:"KGL",scnr:"",sx:model.common.maxad,sz:0,ex:model.common.maxad,ez:-10,ecnr:""}]});
+ if(type==="ID") Object.assign(base,{name:"WELLE INN",absch:"INN",cptx:model.common.minid||20,cptz:0,finx:.3,finz:.1,shapes:[{ptn:"KGL",scnr:"",sx:model.common.minid||20,sz:0,ex:model.common.minid||20,ez:-10,ecnr:""}]});
+ if(type==="GROOVE_OD") Object.assign(base,{name:"EINSTICH AUS",x:model.common.maxad-5,z:-10,width:3,depth:2,vc:150,feed:.08,wnr:"12"});
+ if(type==="GROOVE_ID") Object.assign(base,{name:"EINSTICH INN",x:model.common.minid||20,z:-10,width:3,depth:2,vc:120,feed:.06,wnr:"13"});
+ if(type==="DRILL") Object.assign(base,{name:"BOHREN",diameter:10,zstart:2,zend:-30,peck:5,vc:80,feed:.12,wnr:"20",m:"8"});
+ if(type==="THREAD_OD") Object.assign(base,{name:"GEWINDE AUS",diameter:30,zstart:0,zend:-25,pitch:1.5,depth:.92,wnr:"30"});
+ if(type==="THREAD_ID") Object.assign(base,{name:"GEWINDE INN",diameter:24,zstart:0,zend:-25,pitch:1.5,depth:.92,wnr:"31"});
+ if(type==="PART") Object.assign(base,{name:"ABSTECHEN",z:-50,xend:0,width:3,vc:120,feed:.08,wnr:"40",m:"8"});
+ if(type==="GENERIC") Object.assign(base,{name:"FREIE EINHEIT",p1:"",p2:"",p3:"",p4:""});
+ return base;
+}
+
+function field(label,value,path,type="text"){
+ const val=value??"";
+ return `<div class="field"><label>${label}</label><input type="${type}" value="${esc(val)}" data-path="${path}"></div>`;
+}
+function selectField(label,value,path,opts){
+ return `<div class="field"><label>${label}</label><select data-path="${path}">${opts.map(o=>`<option ${o===value?"selected":""}>${o}</option>`).join("")}</select></div>`;
+}
+function esc(v){return String(v).replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("<","&lt;")}
+function unitActions(i){
+ return `<div class="unitactions">
+ <button data-up="${i}">↑</button><button data-down="${i}">↓</button><button data-copy="${i}">Kopie</button><button data-delunit="${i}" class="danger">×</button>
+ </div>`;
+}
+function toolRow(t,path,label,cls){
+ return `<div class="grid tool">
+ <div class="rowlabel ${cls}">${label}</div>
+ ${field("SNR",t.snr,`${path}.snr`)}${field("WNr.",t.wnr,`${path}.wnr`)}${field("TYP",t.typ,`${path}.typ`)}
+ ${field("TIE-1",t.tie1,`${path}.tie1`)}${field("TIEFE-2",t.tie2,`${path}.tie2`)}${field("TIE-3",t.tie3,`${path}.tie3`)}
+ ${field("SCHLIC-X",t.schlicx,`${path}.schlicx`)}${field("SCHLIC-Z",t.schlicz,`${path}.schlicz`)}
+ ${field("SCH.",t.vc,`${path}.vc`)}${field("VOR.",t.feed,`${path}.feed`)}${field("M",t.m,`${path}.m`)}
+ </div>`;
+}
+function shapeRow(s,ui,si){
+ return `<div class="grid shape" style="margin-top:5px">
+ <div class="rowlabel">FRM ${si+1}</div>
+ ${field("PTN",s.ptn,`units.${ui}.shapes.${si}.ptn`)}
+ ${field("S-CNR",s.scnr,`units.${ui}.shapes.${si}.scnr`)}
+ ${field("SPT-X",s.sx,`units.${ui}.shapes.${si}.sx`,"number")}
+ ${field("SPT-Z",s.sz,`units.${ui}.shapes.${si}.sz`,"number")}
+ ${field("EPT-X",s.ex,`units.${ui}.shapes.${si}.ex`,"number")}
+ ${field("EPT-Z",s.ez,`units.${ui}.shapes.${si}.ez`,"number")}
+ ${field("E-CNR",s.ecnr,`units.${ui}.shapes.${si}.ecnr`)}
+ <div><button data-delshape="${ui},${si}" style="min-height:32px;padding:3px 8px">×</button></div>
+ </div>`;
+}
+function renderUnit(u,i){
+ let body="";
+ if(u.type==="FACE"){
+   body=`<div class="grid op">${field("FIN-Z",u.finz,`units.${i}.finz`,"number")}</div>
+   ${toolRow(u.rough,`units.${i}.rough`,"R","r")}${toolRow(u.finish,`units.${i}.finish`,"F","f")}
+   <div class="grid shape" style="margin-top:6px"><div class="rowlabel">FRM 1</div><div></div><div></div>
+   ${field("SPT-X",u.sx,`units.${i}.sx`,"number")}${field("SPT-Z",u.sz,`units.${i}.sz`,"number")}
+   ${field("EPT-X",u.ex,`units.${i}.ex`,"number")}${field("EPT-Z",u.ez,`units.${i}.ez`,"number")}</div>`;
+ } else if(["OD","ID"].includes(u.type)){
+   body=`<div class="grid op">${field("ABSCH.",u.absch,`units.${i}.absch`)}${field("CPT-X",u.cptx,`units.${i}.cptx`,"number")}${field("CPT-Z",u.cptz,`units.${i}.cptz`,"number")}${field("FIN-X",u.finx,`units.${i}.finx`,"number")}${field("FIN-Z",u.finz,`units.${i}.finz`,"number")}</div>
+   ${toolRow(u.rough,`units.${i}.rough`,"R","r")}${toolRow(u.finish,`units.${i}.finish`,"F","f")}
+   ${u.shapes.map((s,si)=>shapeRow(s,i,si)).join("")}
+   <div class="addrow"><button data-addshape="${i}">+ Konturzeile</button></div>`;
+ } else if(["GROOVE_OD","GROOVE_ID"].includes(u.type)){
+   body=`<div class="grid drill">${field("X",u.x,`units.${i}.x`,"number")}${field("Z",u.z,`units.${i}.z`,"number")}${field("BREITE",u.width,`units.${i}.width`,"number")}${field("TIEFE",u.depth,`units.${i}.depth`,"number")}${field("WNr.",u.wnr,`units.${i}.wnr`)}${field("SCH.",u.vc,`units.${i}.vc`)}${field("VOR.",u.feed,`units.${i}.feed`)}</div>`;
+ } else if(u.type==="DRILL"){
+   body=`<div class="grid drill">${field("Ø",u.diameter,`units.${i}.diameter`,"number")}${field("SPT-Z",u.zstart,`units.${i}.zstart`,"number")}${field("EPT-Z",u.zend,`units.${i}.zend`,"number")}${field("PECK",u.peck,`units.${i}.peck`,"number")}${field("WNr.",u.wnr,`units.${i}.wnr`)}${field("SCH.",u.vc,`units.${i}.vc`)}${field("VOR.",u.feed,`units.${i}.feed`)}${field("M",u.m,`units.${i}.m`)}</div>`;
+ } else if(["THREAD_OD","THREAD_ID"].includes(u.type)){
+   body=`<div class="grid drill">${field("Ø",u.diameter,`units.${i}.diameter`,"number")}${field("SPT-Z",u.zstart,`units.${i}.zstart`,"number")}${field("EPT-Z",u.zend,`units.${i}.zend`,"number")}${field("STEIG.",u.pitch,`units.${i}.pitch`,"number")}${field("TIEFE",u.depth,`units.${i}.depth`,"number")}${field("WNr.",u.wnr,`units.${i}.wnr`)}</div>`;
+ } else if(u.type==="PART"){
+   body=`<div class="grid drill">${field("Z",u.z,`units.${i}.z`,"number")}${field("EPT-X",u.xend,`units.${i}.xend`,"number")}${field("BREITE",u.width,`units.${i}.width`,"number")}${field("WNr.",u.wnr,`units.${i}.wnr`)}${field("SCH.",u.vc,`units.${i}.vc`)}${field("VOR.",u.feed,`units.${i}.feed`)}${field("M",u.m,`units.${i}.m`)}</div>`;
+ } else {
+   body=`<div class="grid drill">${field("PARAM 1",u.p1,`units.${i}.p1`)}${field("PARAM 2",u.p2,`units.${i}.p2`)}${field("PARAM 3",u.p3,`units.${i}.p3`)}${field("PARAM 4",u.p4,`units.${i}.p4`)}</div>`;
+ }
+ return `<section class="unit"><div class="unithead"><span class="enr">ENr. ${i+1}</span>${field("EINH.",u.name,`units.${i}.name`)}${unitActions(i)}</div>${body}</section>`;
+}
+function render(){
+ $("programNo").value=model.programNo;$("partNo").value=model.partNo;$("description").value=model.description;$("headerProgNo").textContent=model.programNo;
+ let common=`<section class="unit"><div class="unithead"><span class="enr">ENr. 0</span><span class="utype">WERKSTÜCK</span></div>
+ <div class="grid common">${selectField("MAT.",model.common.mat,"common.mat",["ST IRN","ALUM","STAIN","CAST"])}
+ ${field("MAX-AD",model.common.maxad,"common.maxad","number")}${field("MIN-ID",model.common.minid,"common.minid","number")}${field("LÄNGE",model.common.length,"common.length","number")}${field("PLANAUF",model.common.planauf,"common.planauf","number")}${field("DRBE",model.common.drbe,"common.drbe","number")}</div></section>`;
+ $("program").innerHTML=common+model.units.map(renderUnit).join("");
+ bindDynamic(); draw(); refreshSaved();
+}
+function setPath(path,value){
+ const parts=path.split(".");
+ let o=model;
+ for(let i=0;i<parts.length-1;i++) o=o[parts[i]];
+ let k=parts.at(-1); o[k]=value;
+}
+function bindDynamic(){
+ $("program").querySelectorAll("[data-path]").forEach(el=>el.oninput=e=>{
+   let v=e.target.value;
+   if(e.target.type==="number") v=num(v);
+   setPath(e.target.dataset.path,v); draw();
+ });
+ $("program").querySelectorAll("[data-delunit]").forEach(b=>b.onclick=()=>{model.units.splice(+b.dataset.delunit,1);render()});
+ $("program").querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{let i=+b.dataset.copy,c=structuredClone(model.units[i]);c.id=uid();model.units.splice(i+1,0,c);render()});
+ $("program").querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>{let i=+b.dataset.up;if(i>0){[model.units[i-1],model.units[i]]=[model.units[i],model.units[i-1]];render()}});
+ $("program").querySelectorAll("[data-down]").forEach(b=>b.onclick=()=>{let i=+b.dataset.down;if(i<model.units.length-1){[model.units[i+1],model.units[i]]=[model.units[i],model.units[i+1]];render()}});
+ $("program").querySelectorAll("[data-addshape]").forEach(b=>b.onclick=()=>{let i=+b.dataset.addshape,u=model.units[i],last=u.shapes.at(-1)||{ex:u.cptx,ez:u.cptz};u.shapes.push({ptn:"KGL",scnr:"",sx:last.ex,sz:last.ez,ex:last.ex,ez:num(last.ez)-10,ecnr:""});render()});
+ $("program").querySelectorAll("[data-delshape]").forEach(b=>b.onclick=()=>{let [i,j]=b.dataset.delshape.split(",").map(Number);model.units[i].shapes.splice(j,1);render()});
+}
+["programNo","partNo","description"].forEach(id=>$(id).oninput=e=>{model[id]=e.target.value;if(id==="programNo")$("headerProgNo").textContent=e.target.value});
+
+function draw(){
+ const svg=$("svg"),W=980,H=350,left=80,right=38,top=28,bottom=45,cy=(top+H-bottom)/2;
+ const D=Math.max(1,num(model.common.maxad)),L=Math.max(1,num(model.common.length)),PA=Math.max(0,num(model.common.planauf));
+ // Z0 liegt rechts; negative Z-Werte laufen nach links.
+ const usableW=W-left-right, sx=usableW/Math.max(1,L+PA), sr=(H-top-bottom)/(D*1.30);
+ const X=z=>W-right+(num(z))*sx;
+ const Y=d=>cy-(num(d)/2)*sr, Yb=d=>cy+(num(d)/2)*sr;
+
+ let s=`<rect width="${W}" height="${H}" fill="#061013"/>`;
+ s+=`<line x1="${left}" y1="${cy}" x2="${W-right}" y2="${cy}" stroke="#71898e" stroke-dasharray="6 5"/>`;
+
+ // Z-Raster: Z0 rechts, Z- nach links.
+ for(let z=0;z>=-L;z-=10){
+   let x=X(z);
+   s+=`<line x1="${x}" y1="${top}" x2="${x}" y2="${H-bottom}" stroke="#17353b"/>`;
+   s+=`<text x="${x}" y="${H-14}" fill="#76949a" font-size="11" text-anchor="middle">${z===0?"Z0":"Z"+z}</text>`;
+ }
+ if(PA>0){
+   let x=X(PA);
+   s+=`<line x1="${x}" y1="${top}" x2="${x}" y2="${H-bottom}" stroke="#4b3d22" stroke-dasharray="3 4"/>`;
+   s+=`<text x="${x}" y="${H-14}" fill="#d6a84b" font-size="11" text-anchor="middle">Z+${PA}</text>`;
+ }
+
+ // ROHKONTUR: bewusst andere Farbe (orange/gelb), damit sie klar vom Fertigteil getrennt ist.
+ const rawLeft=X(-L), rawRight=X(PA);
+ s+=`<rect x="${Math.min(rawLeft,rawRight)}" y="${Y(D)}" width="${Math.abs(rawRight-rawLeft)}" height="${Yb(D)-Y(D)}"
+      fill="#d59b3230" stroke="#e4a93b" stroke-width="3"/>`;
+ s+=`<text x="${rawLeft+8}" y="${Y(D)-7}" fill="#e4a93b" font-size="12">Rohkontur Ø${D}</text>`;
+
+ // Letzte programmierte Außenkontur als fertiges Werkstück geschlossen darstellen.
+ const odUnits=model.units.filter(u=>u.type==="OD" && Array.isArray(u.shapes) && u.shapes.length);
+ if(odUnits.length){
+   const u=odUnits[odUnits.length-1];
+   let pts=[];
+   u.shapes.forEach((q,j)=>{
+     if(j===0) pts.push({x:num(q.sx),z:num(q.sz)});
+     pts.push({x:num(q.ex),z:num(q.ez)});
+   });
+
+   // Eingabe kann von Z0 nach Z- oder umgekehrt erfolgen. Für die Zeichnung von links nach rechts ordnen.
+   if(pts.length>1 && pts[0].z>pts[pts.length-1].z) pts=pts.reverse();
+
+   // Fertigteil enthält links von der ersten programmierten Kontur weiterhin den Rohdurchmesser.
+   let topPts=[{x:D,z:-L}];
+   if(pts.length){
+     if(pts[0].z>-L) topPts.push({x:D,z:pts[0].z});
+     // Falls der erste Konturpunkt nicht am Roh-Ø liegt, entsteht an dieser Z-Position der Absatz.
+     if(Math.abs(pts[0].x-D)>0.0001) topPts.push({x:pts[0].x,z:pts[0].z});
+     for(const p of pts.slice(Math.abs(pts[0].x-D)>0.0001?1:0)) topPts.push(p);
+   }
+
+   // Doppelte direkt aufeinanderfolgende Punkte entfernen.
+   topPts=topPts.filter((p,i,a)=>i===0 || Math.abs(p.x-a[i-1].x)>1e-9 || Math.abs(p.z-a[i-1].z)>1e-9);
+
+   const topSvg=topPts.map(p=>`${X(p.z)},${Y(p.x)}`);
+   const bottomSvg=[...topPts].reverse().map(p=>`${X(p.z)},${Yb(p.x)}`);
+   const poly=[...topSvg,...bottomSvg].join(" ");
+
+   s+=`<polygon points="${poly}" fill="#20cfe51c" stroke="#35d7e8" stroke-width="3"/>`;
+
+   // Programmpunkte nur auf der oberen Hälfte markieren.
+   pts.forEach(p=>{
+     s+=`<circle cx="${X(p.z)}" cy="${Y(p.x)}" r="4" fill="#7ff3ff"/>`;
+     s+=`<text x="${X(p.z)+6}" y="${Y(p.x)-7}" fill="#aeeff5" font-size="10">Ø${p.x} / Z${p.z}</text>`;
+   });
+ }
+
+ // Innenkonturen weiterhin separat grün.
+ model.units.forEach((u)=>{
+   if(u.type==="ID" && u.shapes?.length){
+     let pts=[];
+     u.shapes.forEach((q,j)=>{if(j===0)pts.push({x:num(q.sx),z:num(q.sz)});pts.push({x:num(q.ex),z:num(q.ez)})});
+     let line=pts.map(p=>`${X(p.z)},${Yb(p.x)}`).join(" ");
+     s+=`<polyline points="${line}" fill="none" stroke="#7ef08a" stroke-width="4"/>`;
+   }
+   if(["GROOVE_OD","GROOVE_ID"].includes(u.type)){
+     let x=X(num(u.z)); s+=`<line x1="${x}" y1="${Y(D)}" x2="${x}" y2="${Yb(D)}" stroke="#ffb04f" stroke-width="4"/>`;
+   }
+   if(u.type==="PART"){
+     let x=X(num(u.z)); s+=`<line x1="${x}" y1="${Y(D)}" x2="${x}" y2="${Yb(D)}" stroke="#ff704d" stroke-width="4"/>`;
+   }
+   if(u.type==="DRILL"){
+     let x1=X(num(u.zstart)),x2=X(num(u.zend));
+     s+=`<line x1="${x1}" y1="${cy}" x2="${x2}" y2="${cy}" stroke="#d8d86a" stroke-width="6"/>`;
+   }
+ });
+
+ // Legende direkt in der Grafik.
+ s+=`<rect x="${left+8}" y="${top+7}" width="12" height="12" fill="#e4a93b"/><text x="${left+26}" y="${top+18}" fill="#e4a93b" font-size="11">Rohkontur</text>`;
+ s+=`<rect x="${left+105}" y="${top+7}" width="12" height="12" fill="#35d7e8"/><text x="${left+123}" y="${top+18}" fill="#35d7e8" font-size="11">Fertigkontur</text>`;
+
+ svg.innerHTML=s;
+ validate();
+}
+function validate(){
+ let e=[],w=[];
+ if(num(model.common.maxad)<=0)e.push("MAX-AD muss > 0 sein.");
+ if(num(model.common.length)<=0)e.push("LÄNGE muss > 0 sein.");
+
+ model.units.forEach((u,i)=>{
+   if(["OD","ID"].includes(u.type))u.shapes.forEach((q,j)=>{
+     [["SPT",q.sx,q.sz],["EPT",q.ex,q.ez]].forEach(([n,x,z])=>{
+       if(num(x)<0) e.push(`ENr.${i+1} FRM${j+1} ${n}: X < 0`);
+       if(num(x)>num(model.common.maxad)&&u.type==="OD") w.push(`ENr.${i+1} FRM${j+1}: X liegt über Roh-Ø.`);
+       if(num(z)<-num(model.common.length)) w.push(`ENr.${i+1} FRM${j+1}: Z liegt hinter Rohlänge.`);
+     });
+   });
+
+   // Lernprüfung für typische Stirnfase:
+   // Wenn ein OD-Konturelement an Z0 einen größeren Durchmesser hat als 2 mm dahinter,
+   // wird die Kontur nach außen statt nach innen aufgeweitet.
+   if(u.type==="OD" && u.shapes?.length){
+     const pts=[];
+     u.shapes.forEach((q,j)=>{if(j===0)pts.push({x:num(q.sx),z:num(q.sz)});pts.push({x:num(q.ex),z:num(q.ez)})});
+     const face=pts.find(p=>Math.abs(p.z)<0.0001);
+     const behind=pts.find(p=>Math.abs(p.z+2)<0.0001);
+     if(face && behind && face.x>behind.x){
+       w.push(`ENr.${i+1}: Die Stirnfase läuft nach außen (Z0 = X${face.x}, Z-2 = X${behind.x}). Für Ø30 mit 2×45° wäre Z0 typischerweise X26 und Z-2 = X30.`);
+     }
+   }
+ });
+
+ let txt=e.length?`<div class="bad">✕ ${e.join("<br>✕ ")}</div>`:`<div class="ok">✓ Keine einfachen Eingabefehler gefunden.</div>`;
+ if(w.length)txt+=`<div class="warntext" style="margin-top:7px">⚠ ${w.join("<br>⚠ ")}</div>`;
+ txt+=`<div style="margin-top:9px"><b>${model.units.length}</b> Bearbeitungseinheit(en) + ENr.0 Werkstückdaten.</div>`;
+ $("status").innerHTML=txt;
+}
+function storage(){
+  try{
+    const raw=localStorage.getItem("mazatrol_programs_v3_ipad") || localStorage.getItem("mazatrol_programs_v2") || "{}";
+    return JSON.parse(raw);
+  }catch(e){ return {}; }
+}
+function saveStorage(o){
+  try{ localStorage.setItem("mazatrol_programs_v3_ipad",JSON.stringify(o)); return true; }
+  catch(e){ return false; }
+}
+function key(){return String(model.programNo||"").trim()||"OHNE-NR"}
+function refreshSaved(){
+ let o=storage(),sel=$("savedPrograms"),cur=sel.value;
+ sel.innerHTML=`<option value="">Gespeicherte Programme…</option>`+Object.keys(o).sort().map(k=>`<option value="${esc(k)}">${esc(k)} – ${esc(o[k].partNo||"")}</option>`).join("");
+ if(o[cur])sel.value=cur;
+}
+$("saveProg").onclick=()=>{let o=storage();o[key()]=structuredClone(model);let ok=saveStorage(o);refreshSaved();$("savedPrograms").value=key();$("status").innerHTML=ok?'<span class="ok">✓ Programm lokal in Safari gespeichert.</span>':'<span class="bad">✕ Safari hat lokales Speichern blockiert. Bitte Backup verwenden.</span>'};
+$("loadProg").onclick=()=>{let k=$("savedPrograms").value,o=storage();if(k&&o[k]){model=structuredClone(o[k]);render()}};
+$("deleteProg").onclick=()=>{let k=$("savedPrograms").value;if(!k)return;if(confirm(`Programm ${k} löschen?`)){let o=storage();delete o[k];saveStorage(o);refreshSaved()}};
+$("duplicate").onclick=()=>{model=structuredClone(model);model.programNo=String(model.programNo)+"-KOPIE";render()};
+$("exportProg").onclick=async()=>{
+ const content=JSON.stringify(model,null,2);
+ const filename=`mazatrol_${key()}.json`;
+ try{
+   const file=new File([content],filename,{type:"application/json"});
+   if(navigator.canShare && navigator.canShare({files:[file]})){
+     await navigator.share({files:[file],title:filename});
+     return;
+   }
+ }catch(e){}
+ $("backupText").value=content;
+ $("backupModal").classList.add("show");
+};
+$("importProg").onclick=()=>$("importFile").click();
+$("importFile").onchange=async e=>{let f=e.target.files[0];if(!f)return;try{let d=JSON.parse(await f.text());if(!d.common||!Array.isArray(d.units))throw 0;model=d;render()}catch{alert("Datei ist kein gültiges Simulator-Programm.")}e.target.value=""};
+
+$("addUnit").onclick=()=>$("unitModal").classList.add("show");
+$("cancelUnit").onclick=()=>$("unitModal").classList.remove("show");
+$("createUnit").onclick=()=>{model.units.push(makeUnit($("unitType").value));$("unitModal").classList.remove("show");render()};
+$("newProg").onclick=()=>$("newModal").classList.add("show");
+$("cancelNew").onclick=()=>$("newModal").classList.remove("show");
+$("createNew").onclick=()=>{model=fresh($("newNo").value,$("newPart").value,$("newDesc").value,num($("newD").value),num($("newL").value));$("newModal").classList.remove("show");render()};
+
+
+$("chamferExample").onclick=()=>{
+  model=fresh("1001","ÜBUNG-FASE","Ø30 auf 40 mm mit 2×45° Fase",50,60);
+  model.common.planauf=2;
+  model.common.drbe=2000;
+
+  const face=makeUnit("FACE");
+  face.finz=0.2; face.sx=50; face.sz=2; face.ex=0; face.ez=0;
+  model.units.push(face);
+
+  const od=makeUnit("OD");
+  od.cptx=50; od.cptz=0; od.finx=0.3; od.finz=0.1;
+  od.shapes=[
+    {ptn:"KGL",scnr:"",sx:26,sz:0,ex:30,ez:-2,ecnr:""},
+    {ptn:"KGL",scnr:"",sx:30,sz:-2,ex:30,ez:-40,ecnr:""},
+    {ptn:"KGL",scnr:"",sx:30,sz:-40,ex:50,ez:-40,ecnr:""}
+  ];
+  model.units.push(od);
+  render();
+};
+
+
+// iPad/iOS Erkennung und Bedienhilfen
+const isiPad = /iPad|Macintosh/.test(navigator.userAgent) && ('ontouchend' in document);
+if(isiPad) document.body.classList.add("ipad");
+$("backupProg").onclick=()=>{$("backupText").value=JSON.stringify(model,null,2);$("backupModal").classList.add("show")};
+$("closeBackup").onclick=()=>$("backupModal").classList.remove("show");
+$("copyBackup").onclick=async()=>{try{await navigator.clipboard.writeText($("backupText").value);$("status").innerHTML='<span class="ok">✓ Backup kopiert.</span>'}catch(e){$("backupText").focus();$("backupText").select();$("status").innerHTML='<span class="warntext">Text ist markiert. Bitte „Kopieren“ im iPad-Menü wählen.</span>'}};
+$("shareBackup").onclick=async()=>{try{if(navigator.share)await navigator.share({title:`MAZATROL ${key()} Backup`,text:$("backupText").value})}catch(e){}};
+$("applyBackup").onclick=()=>{try{const d=JSON.parse($("backupText").value);if(!d.common||!Array.isArray(d.units))throw 0;model=d;$("backupModal").classList.remove("show");render();$("status").innerHTML='<span class="ok">✓ Backup erfolgreich übernommen.</span>'}catch(e){$("status").innerHTML='<span class="bad">✕ Backup-Text ist ungültig.</span>'}};
+document.addEventListener("focusin",e=>{if(isiPad&&(e.target.matches("input")||e.target.matches("select")||e.target.matches("textarea"))){setTimeout(()=>e.target.scrollIntoView({block:"center",inline:"nearest",behavior:"smooth"}),250)}});
+
+function tick(){let d=new Date();$("clock").textContent=d.toLocaleDateString("de-DE")+"  "+d.toLocaleTimeString("de-DE")}
+setInterval(tick,1000);tick();
+model=fresh();render();
+if(location.protocol==="file:" && isiPad){$("status").innerHTML='<span class="warntext">⚠ Lokale HTML-Dateien sind auf dem iPad eingeschränkt. Wenn Speichern/Import nicht funktioniert, nutze „Backup“. Am zuverlässigsten läuft der Simulator über Safari als normale Webseite.</span>';}
+</script>
+
+<script>
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./service-worker.js").catch(()=>{}));
+}
+(function(){
+  const standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  const isIOS = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent) && ("ontouchend" in document);
+  if(isIOS && !standalone){
+    const b=document.getElementById("installBanner");
+    if(b) b.style.display="block";
+  }
+})();
+</script>
+
+</body>
+</html>
